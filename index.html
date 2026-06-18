@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampark Kranti — Next-Gen Decentralized Messenger</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- jsQR Code Image Decoder -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&family=JetBrains+Mono:wght=400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scrollbar-width: thin;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 99px;
+        }
+        .light ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 99px;
+        }
+        
+        .text-shimmer {
+            background: linear-gradient(to right, #6366f1, #8b5cf6, #3b82f6, #6366f1);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: textShimmerAnimation 4s linear infinite;
+        }
+        @keyframes textShimmerAnimation {
+            to { background-position: 200% center; }
+        }
+        .blur-bg {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* Premium Wallpaper themes */
+        .wp-obsidian { background: #06070a !important; }
+        .wp-deepspace { background: radial-gradient(circle, #0c1020 0%, #05070e 100%) !important; }
+        .wp-aurora { background: linear-gradient(135deg, #090615 0%, #150a25 50%, #080310 100%) !important; }
+        .wp-forest { background: linear-gradient(135deg, #040d0a 0%, #0c1d18 100%) !important; }
+        .wp-grape { background: linear-gradient(135deg, #10051d 0%, #080210 100%) !important; }
+        .wp-matrix { background: #000000 !important; font-family: 'JetBrains Mono', monospace !important; }
+    </style>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            accent: '#8b5cf6'
+                        },
+                        obsidian: {
+                            base: '#06070a',
+                            surface: '#0d0e15',
+                            card: '#12141f',
+                            panel: '#181a29',
+                            input: '#0a0b10',
+                            border: 'rgba(255,255,255,0.06)'
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                        'aurora': '0 0 80px 10px rgba(99, 102, 241, 0.15)'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full w-full bg-slate-50 dark:bg-obsidian-base text-slate-800 dark:text-slate-100 transition-colors duration-300 overflow-hidden select-none">
+
+    <!-- FIRST TIME PROFILE CREATION MODAL / ONBOARDING -->
+    <div id="onboardingScreen" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[20000] flex flex-col items-center justify-center p-6">
+        <div class="relative w-full max-w-md bg-white dark:bg-obsidian-card border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-premium space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-brand-500/10 text-brand-500 rounded-2xl flex items-center justify-center mx-auto text-3xl font-bold">
+                    ⬡
+                </div>
+                <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Welcome to Sampark Kranti</h1>
+                <p class="text-xs text-slate-500">Configure your secure decentralized handle to continue. Default usernames are blocked.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Your Full Display Name</label>
+                    <input id="onboardName" type="text" placeholder="e.g. Alex Carter" class="w-full h-11 px-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-brand-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Username Handle</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 font-semibold text-sm">@</span>
+                        <input id="onboardUsername" type="text" placeholder="username" class="w-full h-11 pl-8 pr-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-brand-500 transition-all font-mono">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="submitOnboardingProfile()" class="w-full h-11 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-brand-500/20 active:scale-95">
+                Register Local Handle
+            </button>
+        </div>
+    </div>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen" class="fixed inset-0 bg-slate-100 dark:bg-obsidian-base z-[10000] flex flex-col items-center justify-center transition-all duration-700">
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="relative group cursor-pointer mb-8">
+                <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-brand-500 to-brand-accent opacity-35 blur-lg group-hover:opacity-70 transition duration-500"></div>
+                <div class="relative w-28 h-28 rounded-3xl bg-white/80 dark:bg-obsidian-card/80 border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-premium backdrop-blur-xl">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-tr from-brand-500 to-brand-accent text-6xl font-extrabold select-none">⬡</span>
+                </div>
+            </div>
+            <h1 class="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">SAMPARK KRANTI</h1>
+            <p class="text-xs tracking-[0.4em] text-brand-500 font-bold uppercase mb-12">Decentralized DHT Messenger</p>
+            <div class="w-64 h-[2px] bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden relative">
+                <div id="splashProgressBar" class="h-full bg-gradient-to-r from-brand-500 to-brand-accent w-0 transition-all duration-300 ease-out"></div>
+            </div>
+            <p id="splashStatus" class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-4 tracking-wider uppercase font-bold">Initializing DHT Nodes...</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex h-screen w-screen overflow-hidden relative">
+        
+        <!-- SIDEBAR ICON RAIL -->
+        <aside class="w-[72px] bg-slate-100 dark:bg-obsidian-surface border-r border-slate-200 dark:border-white/5 flex flex-col justify-between items-center py-6 flex-shrink-0 relative z-30 transition-colors duration-300">
+            <div class="flex flex-col items-center gap-8 w-full">
+                <div onclick="openControlCenter('profile')" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-accent flex items-center justify-center text-white text-2xl font-bold cursor-pointer hover:shadow-aurora hover:scale-105 active:scale-95 transition-all shadow-md">
+                    ⬡
+                </div>
+
+                <nav class="flex flex-col items-center gap-3 w-full px-2">
+                    <button onclick="switchTab('chats')" id="rail-chats" class="tab-button w-12 h-12 rounded-xl flex items-center justify-center text-brand-500 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-sm transition-all duration-300 group" title="Inbox">
+                        <i data-lucide="message-square" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <button onclick="switchTab('friends')" id="rail-friends" class="tab-button w-12 h-12 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-all duration-300 group" title="Decentralized Nodes">
+                        <i data-lucide="users" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <button onclick="openControlCenter('storage')" id="rail-storage" class="tab-button w-12 h-12 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-all duration-300 group" title="Disk Metrics">
+                        <i data-lucide="hard-drive" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <button onclick="openControlCenter('profile')" id="rail-settings" class="tab-button w-12 h-12 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-all duration-300 group" title="Settings Center">
+                        <i data-lucide="settings" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="flex flex-col items-center gap-6 w-full">
+                <!-- Theme Mode Controller Button -->
+                <button onclick="toggleThemeMode()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-all duration-300" title="Switch Theme">
+                    <i id="themeToggleIcon" data-lucide="sun" class="w-5 h-5"></i>
+                </button>
+                
+                <div onclick="openControlCenter('profile')" class="relative cursor-pointer group">
+                    <div id="userAvatarRail" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-accent flex items-center justify-center text-white font-bold text-sm shadow-premium ring-2 ring-slate-200 dark:ring-white/5 group-hover:ring-brand-500/50 transition-all transform hover:scale-105 duration-300">
+                        S
+                    </div>
+                    <span id="userStatusRail" class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-100 dark:border-obsidian-surface rounded-full shadow-md"></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CHAT INDEX DIRECTORY / LIST COLUMN -->
+        <section class="w-80 bg-slate-100/80 dark:bg-[#0d0e15] border-r border-slate-200 dark:border-white/5 flex flex-col flex-shrink-0 h-full relative z-20 transition-colors duration-300">
+            <div class="p-6 pb-4 flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h2 id="directoryHeadline" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Inbox</h2>
+                    
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="toggleGlobalSpotlight()" class="w-8 h-8 rounded-lg bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 flex items-center justify-center text-slate-700 dark:text-slate-300 transition-colors" title="Global Search (⌘K)">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openDiscoveryViewModal()" class="w-8 h-8 rounded-lg bg-brand-500/10 hover:bg-brand-500 text-brand-500 hover:text-white flex items-center justify-center transition-all" title="User Discovery / Connections">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DHT Live Network Coordinates Widget -->
+                <div class="p-3 bg-white dark:bg-obsidian-card rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">DHT Routing Table</span>
+                        </div>
+                        <span id="dhtActivePeerCountBadge" class="text-[10px] font-bold text-brand-500">0 Peers</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-500">
+                        <span id="dhtLocalAddressLabel">Resolving IP...</span>
+                        <div class="flex items-center gap-1 text-[9px] text-emerald-500 font-semibold uppercase">
+                            <i data-lucide="shield-check" class="w-3 h-3"></i> E2E Active
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Search Action Input Field -->
+                <div class="relative flex items-center w-full group">
+                    <span class="absolute left-3 text-slate-500 pointer-events-none">
+                        <i data-lucide="search" class="w-4 h-4 group-focus-within:text-brand-500 transition-colors"></i>
+                    </span>
+                    <input oninput="filterChatDirectoryList(this.value)" id="localChatSearchBar" type="text" placeholder="Search secure contacts..." class="w-full h-9 pl-9 pr-3 bg-white dark:bg-obsidian-input/60 border border-slate-200 dark:border-white/5 rounded-xl text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all">
+                </div>
+            </div>
+
+            <!-- List Selector Filter Pills -->
+            <div class="flex gap-1 px-6 pb-3 overflow-x-auto select-none border-b border-slate-200 dark:border-white/5">
+                <button onclick="filterConversations('all')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/10 text-brand-500 dark:text-brand-400 transition-all">All</button>
+                <button onclick="filterConversations('direct')" id="filter-direct" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/5 transition-all">Direct</button>
+                <button onclick="filterConversations('archived')" id="filter-archived" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/5 transition-all">Archived</button>
+            </div>
+
+            <!-- Scrollable List Core -->
+            <div id="chatsScrollBox" class="flex-1 overflow-y-auto py-2 space-y-1">
+                <!-- Dynamically populated list entries -->
+            </div>
+        </section>
+
+        <!-- MESSAGE WORKSPACE VIEWPORT -->
+        <main class="flex-1 flex flex-col bg-slate-50 dark:bg-obsidian-base relative h-full overflow-hidden transition-all duration-300">
+            
+            <!-- COLD WELCOME EMBED -->
+            <div id="welcomePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 dark:bg-obsidian-base/95 z-10 transition-opacity duration-500">
+                <div class="text-center p-12 max-w-md relative">
+                    <div class="absolute -inset-1 rounded-full bg-brand-500/10 blur-[80px] pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-brand-500 to-brand-accent text-8xl font-extrabold mb-6 block select-none">⬡</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Decentralized P2P Space</h2>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">All communications are authenticated using Ed25519 signatures and encrypted via authenticated AES-256-GCM. No central tracking servers exist.</p>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="openDiscoveryViewModal()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-2 mx-auto shadow-lg shadow-brand-500/20">
+                                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                                Open Discovery Passport
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVE MESSAGING HUD -->
+            <div id="activeMessagingHud" class="hidden flex flex-col h-full w-full relative z-0">
+                
+                <!-- HUD Banner -->
+                <header class="h-16 px-6 bg-white dark:bg-obsidian-surface border-b border-slate-200 dark:border-white/5 flex items-center justify-between flex-shrink-0 relative overflow-visible z-30 transition-colors duration-300">
+                    <div class="absolute -left-12 -top-12 w-64 h-32 bg-brand-500/5 blur-3xl rounded-full pointer-events-none"></div>
+                    
+                    <div class="flex items-center gap-4 relative z-10">
+                        <div class="relative">
+                            <div id="activeParticipantAvatar" class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+                                ⬡
+                            </div>
+                            <span id="activeParticipantIndicator" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-obsidian-surface rounded-full"></span>
+                        </div>
+                        <div class="max-w-[150px] md:max-w-md overflow-hidden">
+                            <div class="flex items-center gap-2">
+                                <h3 id="activeParticipantName" class="text-sm font-bold text-slate-900 dark:text-white truncate">Decentralized Peer</h3>
+                                <span id="securityShieldIcon" class="text-emerald-500" title="E2E Encrypted Routing Enabled (AES-256-GCM)">
+                                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                            <span id="activeParticipantSubtitle" class="text-[10px] font-mono text-slate-500 dark:text-slate-400 block mt-0.5 truncate">nid_...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 relative z-10">
+                        <!-- Pin and Archive Controls -->
+                        <button id="pinChatBtn" onclick="togglePinActiveChat()" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all" title="Pin Chat">
+                            <i data-lucide="pin" class="w-4 h-4"></i>
+                        </button>
+                        <button id="archiveChatBtn" onclick="toggleArchiveActiveChat()" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all" title="Archive Chat">
+                            <i data-lucide="archive" class="w-4 h-4"></i>
+                        </button>
+                        
+                        <!-- Destructive Actions Dropdown Menu -->
+                        <div class="relative">
+                            <button onclick="toggleMoreChatActions()" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all" title="More Actions">
+                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                            </button>
+                            <div id="moreActionsMenu" class="hidden absolute right-0 mt-2 w-44 bg-white dark:bg-obsidian-card border border-slate-200 dark:border-white/10 rounded-xl shadow-lg py-1.5 z-[100]">
+                                <button onclick="triggerClearChat()" class="w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2">
+                                    <i data-lucide="eraser" class="w-3.5 h-3.5 text-orange-500"></i> Clear History
+                                </button>
+                                <button onclick="triggerDeleteChat()" class="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-500"></i> Delete Connection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Scrollable message deck flow -->
+                <div id="messageScrollerFlow" class="wp-obsidian flex-1 overflow-y-auto p-6 space-y-4 transition-colors duration-300 relative z-10">
+                    <!-- Dynamic chat messages go here -->
+                </div>
+
+                <!-- HUD Composer Foot Block -->
+                <footer class="px-6 py-4 bg-slate-100 dark:bg-[#0d0e15] border-t border-slate-200 dark:border-white/5 flex flex-col gap-2 flex-shrink-0 relative z-20 transition-colors duration-300">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1.5 relative">
+                            <!-- Emoji Menu Trigger -->
+                            <button onclick="toggleEmojiTray()" class="w-10 h-10 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors shadow-sm" title="Insert Emoji">
+                                <i data-lucide="smile" class="w-5 h-5"></i>
+                            </button>
+                            <!-- Emoji Picker Tray Grid -->
+                            <div id="emojiPickerTray" class="hidden absolute bottom-12 left-0 bg-white dark:bg-obsidian-card border border-slate-200 dark:border-white/10 rounded-2xl p-3 shadow-premium w-64 grid grid-cols-6 gap-2 z-[100]">
+                                <span onclick="appendMockEmoji('😊')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">😊</span>
+                                <span onclick="appendMockEmoji('😂')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">😂</span>
+                                <span onclick="appendMockEmoji('👍')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">👍</span>
+                                <span onclick="appendMockEmoji('🔥')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">🔥</span>
+                                <span onclick="appendMockEmoji('🎉')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">🎉</span>
+                                <span onclick="appendMockEmoji('❤️')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">❤️</span>
+                                <span onclick="appendMockEmoji('🤔')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">🤔</span>
+                                <span onclick="appendMockEmoji('👀')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">👀</span>
+                                <span onclick="appendMockEmoji('✨')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">✨</span>
+                                <span onclick="appendMockEmoji('🚀')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">🚀</span>
+                                <span onclick="appendMockEmoji('💯')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">💯</span>
+                                <span onclick="appendMockEmoji('👏')" class="text-center text-xl cursor-pointer hover:scale-125 transition-transform">👏</span>
+                            </div>
+
+                            <!-- Native File Attachment Picker -->
+                            <button id="attachmentSelectBtn" onclick="dispatchAttachmentUpload()" class="w-10 h-10 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors shadow-sm" title="Send File Attachment">
+                                <i data-lucide="paperclip" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex-1">
+                            <!-- Self-Expanding Textarea Composer -->
+                            <textarea id="mainMessageComposer" onkeydown="handleComposerKeyPress(event)" oninput="handleTypingDraftSave()" rows="1" placeholder="Type a secure message..." class="w-full py-3 px-4 bg-white dark:bg-[#06070a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/20 transition-all shadow-sm resize-none"></textarea>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="dispatchUserMessage()" class="w-11 h-11 rounded-xl bg-brand-500 hover:bg-brand-600 flex items-center justify-center text-white transition-all shadow-md shadow-brand-500/20 hover:scale-105 active:scale-95">
+                                <i data-lucide="send" class="w-4.5 h-4.5 ml-0.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </footer>
+
+            </div>
+        </main>
+
+    </div>
+
+    <!-- TAILWIND PREMIUM CUSTOM CONFIRMATION MODAL -->
+    <div id="customConfirmModal" class="hidden fixed inset-0 z-[10000] bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="relative w-full max-w-sm bg-white dark:bg-obsidian-surface border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-premium scale-95 transition-transform duration-300">
+            <h4 id="confirmTitle" class="text-base font-bold text-slate-955 dark:text-white">Perform Action</h4>
+            <p id="confirmBody" class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Are you absolutely sure you want to perform this permanent operation?</p>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeConfirmModal(false)" class="px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl">Cancel</button>
+                <button id="confirmBtnAction" onclick="closeConfirmModal(true)" class="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl">Wipe Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL SPOTLIGHT MODAL -->
+    <div id="globalSpotlightModal" class="hidden fixed inset-0 z-[9000] bg-black/60 backdrop-blur-md flex items-start justify-center pt-24 transition-opacity duration-300">
+        <div onclick="toggleGlobalSpotlight()" class="absolute inset-0"></div>
+
+        <div class="relative w-full max-w-xl bg-white dark:bg-obsidian-surface border border-slate-200 dark:border-white/10 rounded-2xl shadow-premium overflow-hidden transition-all duration-300 scale-95">
+            <div class="flex items-center border-b border-slate-200 dark:border-white/5 px-4 h-14">
+                <i data-lucide="search" class="w-5 h-5 text-brand-500 flex-shrink-0 mr-3"></i>
+                <input oninput="executeSpotlightSearch(this.value)" id="spotlightSearchInput" type="text" placeholder="Search user nodes or settings..." class="w-full bg-transparent border-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none">
+                <span class="text-[10px] font-mono bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400">ESC</span>
+            </div>
+
+            <div id="spotlightScrollBox" class="max-h-96 overflow-y-auto p-4 space-y-4">
+                <!-- Search dynamic feedback entries -->
+            </div>
+        </div>
+    </div>
+
+    <!-- USER DISCOVERY & AUTO-RESOLUTION SYSTEM MODAL -->
+    <div id="discoveryViewModal" class="hidden fixed inset-0 z-[9000] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+        <div onclick="closeDiscoveryViewModal()" class="absolute inset-0"></div>
+        
+        <div class="relative w-full max-w-3xl bg-white dark:bg-obsidian-surface border border-slate-200 dark:border-white/10 rounded-3xl shadow-premium overflow-hidden flex flex-col md:flex-row animate-scale-up z-50">
+            
+            <!-- Side A: Personal identity card, Live QR Code Canvas, and Cryptographic Token sharing -->
+            <div class="p-6 md:w-[40%] bg-slate-50 dark:bg-[#090b10] flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5">
+                <h3 class="text-md font-bold text-slate-900 dark:text-white mb-1">My DHT Passport</h3>
+                <p class="text-[10px] text-slate-500 mb-4 leading-relaxed">Other users can scan this QR or import your connection token to discover your dynamic network location automatically.</p>
+                
+                <div class="my-2 p-3 bg-white rounded-2xl shadow-inner flex items-center justify-center border border-slate-200/50">
+                    <div id="qrCodeContainer" class="w-36 h-36 flex items-center justify-center bg-white p-1 rounded-2xl shadow-inner border border-slate-200/50 overflow-hidden"></div>
+                </div>
+                
+                <div class="w-full max-w-[200px] overflow-hidden truncate">
+                    <span id="userPassportHandle" class="text-[10px] font-mono font-bold bg-brand-500/10 text-brand-500 dark:text-brand-400 px-3 py-1.5 rounded-xl mt-2 mb-4 block truncate select-text cursor-pointer" onclick="copyRawNodeId()">nid_...</span>
+                </div>
+
+                <div class="w-full space-y-2 px-1">
+                    <button onclick="copyMyCryptographicToken()" class="w-full py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+                        <i data-lucide="copy" class="w-3.5 h-3.5 text-brand-500"></i> Copy DHT Token
+                    </button>
+                    <button onclick="downloadQRCode()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-indigo-600/10">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Download Passport QR
+                    </button>
+                    <span id="copyFeedback" class="text-[10px] text-emerald-500 text-center block h-3 opacity-0 transition-opacity">Token copied successfully!</span>
+                </div>
+            </div>
+
+            <!-- Side B: Navigation Tabs, Search/Scanning, and Direct Drag & Drop / Paste Token imports -->
+            <div class="p-6 md:w-[60%] flex flex-col h-[500px]">
+                <div class="flex items-center justify-between mb-4">
+                    <!-- Nav Tabs inside side B header -->
+                    <div class="flex gap-2 border-b border-slate-100 dark:border-white/5 pb-1">
+                        <button id="tabBtn-network" onclick="switchDiscoveryTab('network')" class="text-xs font-extrabold tracking-wider uppercase border-b-2 border-brand-500 pb-1 text-brand-500 transition-all">
+                            DHT Route Resolution
+                        </button>
+                        <button id="tabBtn-import" onclick="switchDiscoveryTab('import')" class="text-xs font-extrabold tracking-wider uppercase border-b-2 border-transparent pb-1 text-slate-400 hover:text-slate-200 transition-all ml-4">
+                            Import Connection Token
+                        </button>
+                    </div>
+                    
+                    <button onclick="closeDiscoveryViewModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- TAB 1: NETWORK & LAN CONTENT -->
+                <div id="discoveryTab-network" class="flex-1 flex flex-col overflow-hidden space-y-4">
+                    <!-- Simple Dynamic Search Form -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Connect directly with Cryptographic User ID</label>
+                        <div class="flex gap-2">
+                            <input id="discoveryTargetID" type="text" placeholder="Enter target 64-character User ID hex..." class="flex-1 h-11 px-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                            <button id="btnSendRequest" onclick="dispatchDiscoveryRequest()" class="px-5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-brand-500/20">
+                                Send Handshake
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-500">Resolves targets securely on the Distributed Hash Table. No third-party servers required.</p>
+                    </div>
+
+                    <!-- Dynamic UDP Broadcast Auto-Scanned Users -->
+                    <div class="flex-1 flex flex-col overflow-hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Auto-Scanned Nearby Nodes (LAN)</h4>
+                            <span class="flex items-center gap-1 text-[9px] text-brand-500 font-bold animate-pulse">
+                                <i data-lucide="radio" class="w-3 h-3"></i> Broadcast Online
+                            </span>
+                        </div>
+                        <div id="nearbyUsersScanBox" class="flex-1 overflow-y-auto space-y-2 pr-1 border border-dashed border-slate-200 dark:border-white/5 rounded-2xl p-2 bg-slate-50/50 dark:bg-[#08090f]">
+                            <p class="text-center text-[11px] text-slate-400 py-6">Polling routing tables for topological neighbors...</p>
+                        </div>
+                    </div>
+
+                    <!-- Incoming Friend Request Link Requests -->
+                    <div class="h-24 flex flex-col overflow-hidden flex-shrink-0">
+                        <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Incoming Handshake Requests</h4>
+                        <div id="pendingInvitesList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                            <p class="text-center text-[10px] text-slate-500 py-3">No pending link requests</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: IMPORT TOKEN & QR SCREENSHOT FILE CONTENT -->
+                <div id="discoveryTab-import" class="flex-1 flex flex-col justify-between hidden">
+                    <div class="space-y-4">
+                        <p class="text-[11px] text-slate-400">Establish encrypted direct channels. Import an encrypted connection token or load a saved QR image.</p>
+                        
+                        <!-- Paste Textbox Field -->
+                        <div>
+                            <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Paste Connection Token</label>
+                            <input id="importTokenInput" type="text" placeholder="NEXUS_DHT:eyJ1c2..." class="w-full mt-1.5 h-11 px-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 focus:outline-none focus:border-brand-500 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 placeholder-slate-500">
+                        </div>
+
+                        <!-- Drag & Drop QR Image Scanner Element -->
+                        <div>
+                            <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Drag & Drop QR Image File</label>
+                            <div id="dropZoneElement" class="mt-1.5 border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 bg-slate-100/50 dark:bg-slate-900/40 rounded-2xl p-6 text-center cursor-pointer transition-all relative" ondragover="event.preventDefault()" ondrop="handleQRImageDrop(event)">
+                                <input type="file" id="qrFileInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleQRImageSelect(event)">
+                                <i data-lucide="image-plus" class="w-7 h-7 text-slate-400 dark:text-slate-500 mx-auto mb-2"></i>
+                                <p id="dropZoneText" class="text-[11px] text-slate-500 dark:text-slate-400">Click to upload or drop QR Code image file</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex gap-2">
+                        <button onclick="closeDiscoveryViewModal()" class="flex-1 py-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold transition-all">
+                            Cancel
+                        </button>
+                        <button onclick="triggerP2PTokenImport()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all">
+                            Establish Permanent Link
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MASTER CONTROL CENTER DRAWER -->
+    <div id="masterControlCenterModal" class="hidden fixed inset-0 z-[8000] bg-black/50 backdrop-blur-sm flex justify-start">
+        <div onclick="closeControlCenter()" class="absolute inset-0"></div>
+
+        <div class="relative w-full max-w-md bg-white dark:bg-obsidian-surface h-full shadow-premium flex flex-col border-r border-slate-200 dark:border-white/5 z-10 transition-transform duration-300 overflow-hidden">
+            
+            <div class="relative h-36 flex-shrink-0 flex items-end p-6 bg-gradient-to-b from-brand-500/10 to-transparent border-b border-slate-200 dark:border-white/5">
+                <button onclick="closeControlCenter()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                
+                <div class="flex items-center gap-4 relative z-10 w-full overflow-hidden">
+                    <div id="modalProfileAvatar" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-accent flex items-center justify-center text-white text-xl font-extrabold shadow-premium flex-shrink-0">
+                        S
+                    </div>
+                    <div class="overflow-hidden pr-8">
+                        <h4 id="profileCardName" class="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">Sampark Client</h4>
+                        <p id="profileCardHandle" class="text-[10px] text-brand-400 font-mono tracking-wide uppercase truncate select-text cursor-pointer">nid_...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Multi-Tab Navigation Selectors -->
+            <div class="flex border-b border-slate-200 dark:border-white/5 px-2 bg-slate-50 dark:bg-[#0d0e15] flex-shrink-0 overflow-x-auto select-none whitespace-nowrap">
+                <button onclick="switchControlPage('profile')" id="navSetting-profile" class="py-3 px-3 text-xs font-bold border-b-2 border-brand-500 text-brand-500 transition-all flex items-center gap-1">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i> Profile & Passport
+                </button>
+                <button onclick="switchControlPage('wallpaper')" id="navSetting-wallpaper" class="py-3 px-3 text-xs font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all flex items-center gap-1">
+                    <i data-lucide="palette" class="w-3.5 h-3.5"></i> Wallpaper
+                </button>
+                <button onclick="switchControlPage('storage')" id="navSetting-storage" class="py-3 px-3 text-xs font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all flex items-center gap-1">
+                    <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i> Storage Manager
+                </button>
+            </div>
+
+            <!-- Scrollable Settings Tab -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-obsidian-surface">
+                <!-- 1. PROFILE SECTION -->
+                <div id="controlSec-profile" class="control-section space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Permanent Cryptographic User ID</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 font-semibold text-sm">⬡</span>
+                            <input id="formProfileHandle" type="text" readonly class="w-full h-11 pl-7 pr-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl text-slate-500 dark:text-slate-400 text-xs font-mono font-semibold focus:outline-none select-all cursor-text">
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1">Your User ID is permanent and unchangeable. It is derived mathematically from your Ed25519 identity key.</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Display Name</label>
+                        <input id="formProfileName" type="text" class="w-full h-11 px-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-brand-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Custom About Bio</label>
+                        <textarea id="formProfileBio" rows="2" class="w-full p-4 bg-slate-100 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-brand-500 transition-all resize-none"></textarea>
+                    </div>
+                    <button onclick="saveUserProfileSettings()" class="w-full h-11 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-brand-500/20 active:scale-[0.98]">
+                        Save Display Configurations
+                    </button>
+                </div>
+
+                <!-- WALLPAPER SELECTION PAGE -->
+                <div id="controlSec-wallpaper" class="control-section hidden space-y-4">
+                    <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">Predefined Chat Wallpapers</h4>
+                    <p class="text-[11px] text-slate-500">Pick a background color scheme for your chat panels. This preference saves automatically.</p>
+                    
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div onclick="selectWallpaper('obsidian')" class="h-20 rounded-xl wp-obsidian border-2 border-transparent hover:border-brand-500 cursor-pointer flex items-center justify-center shadow-md">
+                            <span class="text-[10px] font-bold text-slate-400">Obsidian Pitch</span>
+                        </div>
+                        <div onclick="selectWallpaper('deepspace')" class="h-20 rounded-xl wp-deepspace border-2 border-transparent hover:border-brand-500 cursor-pointer flex items-center justify-center shadow-md">
+                            <span class="text-[10px] font-bold text-slate-300">Deep Space</span>
+                        </div>
+                        <div onclick="selectWallpaper('aurora')" class="h-20 rounded-xl wp-aurora border-2 border-transparent hover:border-brand-500 cursor-pointer flex items-center justify-center shadow-md">
+                            <span class="text-[10px] font-bold text-purple-200">Aurora Dusk</span>
+                        </div>
+                        <div onclick="selectWallpaper('forest')" class="h-20 rounded-xl wp-forest border-2 border-transparent hover:border-brand-500 cursor-pointer flex items-center justify-center shadow-md">
+                            <span class="text-[10px] font-bold text-emerald-200">Emerald Forest</span>
+                        </div>
+                        <div onclick="selectWallpaper('grape')" class="h-20 rounded-xl wp-grape border-2 border-transparent hover:border-brand-500 cursor-pointer flex items-center justify-center shadow-md">
+                            <span class="text-[10px] font-bold text-indigo-200">Royal Grape</span>
+                        </div>
+                        <div onclick="selectWallpaper('matrix')" class="h-20 rounded-xl wp-matrix border-2 border-transparent hover:border-brand-500 cursor-pointer flex items-center justify-center shadow-md">
+                            <span class="text-[10px] font-bold text-emerald-400">Matrix Terminal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. STORAGE MANAGER SECTION -->
+                <div id="controlSec-storage" class="control-section hidden space-y-4">
+                    <div class="p-4 bg-slate-50 dark:bg-obsidian-input border border-slate-200 dark:border-white/5 rounded-xl space-y-3">
+                        <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">Local Directory Allocation</h4>
+                        <div class="space-y-2 text-xs font-mono text-slate-600 dark:text-slate-400">
+                            <div class="flex justify-between">
+                                <span>Database File size:</span>
+                                <span id="storageSizeDB" class="text-brand-500 font-bold">0.00 KB</span>
+                            </div>
+                            <div class="flex justify-between border-t border-slate-200 dark:border-white/10 pt-2 font-bold text-slate-800 dark:text-slate-200">
+                                <span>Total Drive footprint:</span>
+                                <span id="storageSizeTotal">0.00 KB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION POP -->
+    <div id="alertBox" class="fixed bottom-6 right-6 transform translate-y-12 opacity-0 pointer-events-none bg-brand-600 text-white font-medium text-xs py-3 px-5 rounded-xl shadow-premium z-[20000] transition-all duration-300 flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4"></i>
+        <span id="alertMessage">Notification Alert Payload</span>
+    </div>
+
+    <script>
+        let currentChats = [];
+        let activeChatUUID = null;
+        let activeTabName = 'chats';
+        let currentFilterType = 'all';
+        let discoveredUsersScanInterval = null;
+        let dhtStatusPollingInterval = null;
+        let myIdentityCard = null;
+        let myCurrentToken = "";
+        let currentActiveWallpaper = 'obsidian';
+        let activeConfirmCallback = null;
+
+        const getBridge = () => {
+            return window.pywebview && window.pywebview.api ? window.pywebview.api : null;
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            const savedWp = localStorage.getItem('nexus_wallpaper') || 'obsidian';
+            applyWallpaperToScroller(savedWp);
+
+            let pct = 0;
+            const bar = document.getElementById('splashProgressBar');
+            const log = document.getElementById('splashStatus');
+            
+            const interval = setInterval(() => {
+                pct += 25;
+                if (bar) bar.style.width = pct + '%';
+                
+                if (pct === 50) log.innerText = "Syncing local database metrics...";
+                if (pct === 75) log.innerText = "Rebuilding Kademlia buckets...";
+                
+                if (pct >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const splash = document.getElementById('splashScreen');
+                        if (splash) splash.classList.add('opacity-0', 'pointer-events-none');
+                        bootstrapBackendData();
+                    }, 400);
+                }
+            }, 100);
+        });
+
+        function formatSectionHeaderDate(date) {
+            if (!date || isNaN(date.getTime())) return "Unknown Date";
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+            if (date.toDateString() === today.toDateString()) {
+                return "Today";
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return "Yesterday";
+            } else {
+                return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+        }
+
+        async function bootstrapBackendData() {
+            const bridge = getBridge();
+            if (!bridge) {
+                console.warn("Sampark Kranti API Bridge disconnected. Emulating sandbox.");
+                fallbackBootstrapSandbox();
+                return;
+            }
+
+            try {
+                const profile = await bridge.fetch_user_identity_card();
+                if (profile) {
+                    myIdentityCard = profile;
+
+                    if (!profile.display_name || profile.display_name === "" || profile.display_name === "Nexus User" || profile.display_name === "Nexus Client") {
+                        document.getElementById('onboardingScreen').classList.remove('hidden');
+                        return;
+                    }
+
+                    updateUIWithProfile(profile.display_name, profile.public_id, profile.bio || "");
+
+                    try {
+                        const token = await bridge.generate_my_connection_token();
+                        myCurrentToken = token;
+                        renderQRCanvas(token);
+                    } catch (err) {
+                        console.error("Local token generation failed, falling back to raw public ID.", err);
+                        renderQRCanvas(profile.public_id);
+                    }
+                }
+                
+                startDHTStatusPolling();
+                await syncChatDirectory();
+                syncPendingRequests();
+            } catch (ex) {
+                console.error("Critical core bootstrap transition error: ", ex);
+            }
+        }
+
+        async function submitOnboardingProfile() {
+            const name = document.getElementById('onboardName').value.trim();
+            const rawUser = document.getElementById('onboardUsername').value.trim();
+
+            if (!name || !rawUser) {
+                showAlertNotification("Both Name and Username Handle are required.");
+                return;
+            }
+
+            const username = rawUser.startsWith("@") ? rawUser : "@" + rawUser;
+            const bridge = getBridge();
+            
+            if (bridge) {
+                try {
+                    await bridge.save_profile({
+                        name: name,
+                        username: username,
+                        bio: "Available on Sampark Kranti."
+                    });
+                    document.getElementById('onboardingScreen').classList.add('hidden');
+                    showAlertNotification("Profile handle registered successfully!");
+                    await bootstrapBackendData();
+                } catch (e) {
+                    showAlertNotification("Failed to configure handle: " + e);
+                }
+            } else {
+                localStorage.setItem('nexus_sandbox_name', name);
+                localStorage.setItem('nexus_sandbox_username', username);
+                document.getElementById('onboardingScreen').classList.add('hidden');
+                fallbackBootstrapSandbox();
+            }
+        }
+
+        function updateUIWithProfile(name, publicId, bio) {
+            const initials = (name || "S").charAt(0).toUpperCase();
+            document.getElementById('userAvatarRail').innerText = initials;
+            document.getElementById('modalProfileAvatar').innerText = initials;
+            document.getElementById('profileCardName').innerText = name;
+            document.getElementById('profileCardHandle').innerText = publicId;
+            document.getElementById('userPassportHandle').innerText = publicId;
+            document.getElementById('formProfileName').value = name;
+            document.getElementById('formProfileBio').value = bio || "";
+            document.getElementById('formProfileHandle').value = publicId;
+        }
+
+        function startDHTStatusPolling() {
+            const bridge = getBridge();
+            if (!bridge) return;
+
+            const poll = () => {
+                bridge.get_dht_status().then(status => {
+                    if (status) {
+                        document.getElementById('dhtActivePeerCountBadge').innerText = `${status.peer_count} Peers`;
+                        document.getElementById('dhtLocalAddressLabel').innerText = `${status.public_ip || "127.0.0.1"}:${status.tcp_port || "7777"}`;
+                    }
+                }).catch(err => {
+                    console.error("DHT status query failed:", err);
+                });
+            };
+
+            poll();
+            dhtStatusPollingInterval = setInterval(poll, 4000);
+        }
+
+        function renderQRCanvas(text) {
+            const container = document.getElementById('qrCodeContainer');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const qrImg = document.createElement('img');
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(text)}`;
+            qrImg.className = "w-[140px] h-[140px] object-contain rounded-xl shadow-inner border border-slate-100";
+            qrImg.onerror = () => {
+                container.innerHTML = `<div class="text-[10px] text-slate-400 p-2 font-mono break-all">${text}</div>`;
+            };
+            container.appendChild(qrImg);
+
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    container.innerHTML = "";
+                    new QRCode(container, {
+                        text: text,
+                        width: 140,
+                        height: 140,
+                        colorDark: "#06070a",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch (e) {
+                    container.appendChild(qrImg);
+                }
+            } else {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+                script.onload = () => {
+                    try {
+                        container.innerHTML = "";
+                        new QRCode(container, {
+                            text: text,
+                            width: 140,
+                            height: 140,
+                            colorDark: "#06070a",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    } catch (err) {
+                        container.appendChild(qrImg);
+                    }
+                };
+                document.head.appendChild(script);
+            }
+        }
+
+        function downloadQRCode() {
+            const container = document.getElementById('qrCodeContainer');
+            if (!container) return;
+            
+            const canvas = container.querySelector('canvas');
+            if (canvas) {
+                try {
+                    const dataUrl = canvas.toDataURL("image/png");
+                    const link = document.createElement('a');
+                    link.download = `sampark_${myIdentityCard ? myIdentityCard.public_id.substring(0, 12) : 'node'}_qr.png`;
+                    link.href = dataUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showAlertNotification("QR Code downloaded successfully.");
+                } catch (e) {
+                    showAlertNotification("Unable to convert format. Download failed.");
+                }
+            } else {
+                const img = container.querySelector('img');
+                if (img && img.src) {
+                    const link = document.createElement('a');
+                    link.download = `sampark_${myIdentityCard ? myIdentityCard.public_id.substring(0, 12) : 'node'}_qr.png`;
+                    link.href = img.src;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showAlertNotification("QR Code downloaded successfully.");
+                } else {
+                    showAlertNotification("QR Code image is not fully rendered yet.");
+                }
+            }
+        }
+
+        function copyMyCryptographicToken() {
+            if (!myCurrentToken) {
+                showAlertNotification("Token is still generating.");
+                return;
+            }
+            
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = myCurrentToken;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            const feedback = document.getElementById('copyFeedback');
+            if (feedback) {
+                feedback.classList.remove('opacity-0');
+                setTimeout(() => {
+                    feedback.classList.add('opacity-0');
+                }, 2000);
+            }
+            showAlertNotification("Connection Token copied to clipboard!");
+        }
+
+        function copyRawNodeId() {
+            if (!myIdentityCard || !myIdentityCard.public_id) return;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = myIdentityCard.public_id;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            showAlertNotification("Full User ID copied.");
+        }
+
+        function fallbackBootstrapSandbox() {
+            const savedName = localStorage.getItem('nexus_sandbox_name') || "Alex Carter";
+            const savedBio = localStorage.getItem('nexus_sandbox_bio') || "Secure decentralized client.";
+            const savedId = localStorage.getItem('nexus_sandbox_id') || "nid_5e883f1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
+            
+            myIdentityCard = {
+                public_id: savedId,
+                display_name: savedName,
+                bio: savedBio,
+                user_id: savedId
+            };
+
+            updateUIWithProfile(savedName, savedId, savedBio);
+
+            const tokenPayload = {
+                user_id: savedId,
+                display_name: savedName,
+                ip: "127.0.0.1",
+                port: 9090,
+                public_key: "MOCK_FALLBACK_ED25519_KEY_HEX"
+            };
+            myCurrentToken = "NEXUS_DHT:" + btoa(JSON.stringify(tokenPayload));
+            renderQRCanvas(myCurrentToken);
+
+            currentChats = [
+                {
+                    id: 1,
+                    chat_uuid: "nid_9b5cf61234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                    chat_name: "Decentralized Contact (Sandbox)",
+                    chat_type: "direct",
+                    is_archived: 0,
+                    is_pinned: 0,
+                    draft_text: "",
+                    updated_at: "12:00 PM"
+                }
+            ];
+            renderChatDirectoryList();
+        }
+
+        async function syncChatDirectory() {
+            const bridge = getBridge();
+            if (!bridge) return;
+            try {
+                const response = await bridge.get_chats();
+                currentChats = response || [];
+                
+                // Clear out chats that mistakenly target our own ID
+                if (myIdentityCard && myIdentityCard.public_id) {
+                    currentChats = currentChats.filter(c => c.chat_uuid !== myIdentityCard.public_id);
+                }
+                
+                renderChatDirectoryList();
+            } catch (err) {
+                console.error("Failed to query chats: ", err);
+            }
+        }
+
+        function renderChatDirectoryList(filterQuery = "") {
+            const container = document.getElementById('chatsScrollBox');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const normalizedQuery = filterQuery.toLowerCase().trim();
+            let records = currentChats;
+            
+            if (currentFilterType === 'archived') {
+                records = records.filter(c => c.is_archived === 1);
+            } else {
+                records = records.filter(c => c.is_archived !== 1);
+            }
+
+            records.forEach(chat => {
+                if (normalizedQuery && !chat.chat_name.toLowerCase().includes(normalizedQuery)) return;
+
+                const isActive = activeChatUUID === chat.chat_uuid;
+                const wrapper = document.createElement('div');
+                wrapper.className = `mx-3 p-3 rounded-xl flex items-center justify-between cursor-pointer transition-all ${isActive ? 'bg-brand-500/10 border-brand-500/20 text-brand-500 dark:text-brand-400' : 'hover:bg-black/5 dark:hover:bg-white/5 text-slate-800 dark:text-slate-300 border-transparent'}`;
+                wrapper.setAttribute('onclick', `selectConversation('${chat.chat_uuid}')`);
+
+                wrapper.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="relative flex-shrink-0">
+                            <div class="w-11 h-11 rounded-xl bg-indigo-500 text-white font-extrabold flex items-center justify-center text-sm shadow">
+                                ${(chat.chat_name || "⬡").charAt(0).toUpperCase()}
+                            </div>
+                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-100 dark:border-[#0d0e15] rounded-full"></span>
+                        </div>
+                        <div class="overflow-hidden whitespace-nowrap">
+                            <div class="flex items-center gap-1.5">
+                                <p class="text-sm font-bold truncate">${chat.chat_name || "Decentralized Peer"}</p>
+                                ${chat.is_pinned ? '<i data-lucide="pin" class="w-3 h-3 text-brand-500 flex-shrink-0"></i>' : ''}
+                            </div>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5 font-mono">${chat.chat_uuid.substring(0, 16)}...</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+
+            if (container.innerHTML === "") {
+                container.innerHTML = `<p class="text-center text-[11px] text-slate-500 py-6">No secure contacts found</p>`;
+            }
+            lucide.createIcons();
+        }
+
+        function filterChatDirectoryList(val) {
+            renderChatDirectoryList(val);
+        }
+
+        async function selectConversation(chatUUID) {
+            activeChatUUID = chatUUID;
+            const chat = currentChats.find(c => c.chat_uuid === chatUUID);
+            
+            document.getElementById('welcomePlaceholder').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('activeMessagingHud').classList.remove('hidden');
+
+            if (chat) {
+                document.getElementById('activeParticipantName').innerText = chat.chat_name || "Decentralized Peer";
+                document.getElementById('activeParticipantAvatar').innerText = (chat.chat_name || "⬡").charAt(0).toUpperCase();
+                document.getElementById('mainMessageComposer').value = chat.draft_text || "";
+                document.getElementById('activeParticipantSubtitle').innerText = chat.chat_uuid;
+                
+                const pinBtn = document.getElementById('pinChatBtn');
+                const archiveBtn = document.getElementById('archiveChatBtn');
+                if (chat.is_pinned) {
+                    pinBtn.classList.add('text-brand-500', 'bg-brand-500/10');
+                } else {
+                    pinBtn.classList.remove('text-brand-500', 'bg-brand-500/10');
+                }
+                if (chat.is_archived) {
+                    archiveBtn.classList.add('text-brand-500', 'bg-brand-500/10');
+                } else {
+                    archiveBtn.classList.remove('text-brand-500', 'bg-brand-500/10');
+                }
+            } else {
+                document.getElementById('activeParticipantName').innerText = "Decentralized Peer";
+                document.getElementById('activeParticipantAvatar').innerText = "⬡";
+            }
+
+            await renderConversationMessages();
+            renderChatDirectoryList();
+        }
+
+        async function renderConversationMessages() {
+            const container = document.getElementById('messageScrollerFlow');
+            if (!container || !activeChatUUID) return;
+            container.innerHTML = "";
+
+            const bridge = getBridge();
+            let history = [];
+            
+            if (bridge) {
+                try {
+                    history = await bridge.load_messages(activeChatUUID);
+                } catch (e) {
+                    console.error("Failed loading chat messages: ", e);
+                }
+            } else {
+                history = [
+                    { sender_id: "them", message: "Hey, this is sandbox history.", state: "delivered" }
+                ];
+            }
+
+            let lastRenderedDate = null;
+
+            history.forEach(msg => {
+                const isMe = msg.sender_id !== activeChatUUID;
+
+                let msgDate = new Date(msg.created_at);
+                if (isNaN(msgDate.getTime()) && msg.created_at) {
+                    const formatted = msg.created_at.replace(" ", "T") + "Z";
+                    msgDate = new Date(formatted);
+                }
+                if (isNaN(msgDate.getTime())) {
+                    msgDate = new Date();
+                }
+
+                if (msgDate && (!lastRenderedDate || lastRenderedDate.toDateString() !== msgDate.toDateString())) {
+                    lastRenderedDate = msgDate;
+                    const dateSeparator = document.createElement('div');
+                    dateSeparator.className = "w-full flex justify-center my-4";
+                    dateSeparator.innerHTML = `
+                        <span class="px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-slate-200/50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-500 dark:text-slate-400">
+                            ${formatSectionHeaderDate(msgDate)}
+                        </span>
+                    `;
+                    container.appendChild(dateSeparator);
+                }
+
+                const wrapper = document.createElement('div');
+                wrapper.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'}`;
+
+                let stateTick = "";
+                if (isMe) {
+                    switch(msg.state) {
+                        case 'sending': stateTick = " ◷"; break;
+                        case 'sent': stateTick = " ✓"; break;
+                        case 'delivered': stateTick = " ✓✓"; break;
+                        case 'read': stateTick = " <span class='text-brand-400'>✓✓</span>"; break;
+                        case 'failed': stateTick = " ⚠ Failed"; break;
+                    }
+                }
+
+                let contentHTML = "";
+                if (msg.message.startsWith("[ATTACHMENT|") && msg.message.endsWith("]")) {
+                    const parts = msg.message.slice(12, -1).split("|");
+                    const name = parts[0] || "File";
+                    const type = parts[1] || "documents";
+                    const size = formatBytes(parseInt(parts[2] || "0"));
+
+                    let iconType = "file";
+                    if (type === "images") iconType = "image";
+                    else if (type === "videos") iconType = "video";
+                    else if (type === "audio") iconType = "music";
+
+                    contentHTML = `
+                        <div class="flex items-center gap-3 p-3 bg-black/10 rounded-xl border border-white/5 max-w-sm mt-1">
+                            <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-brand-500">
+                                <i data-lucide="${iconType}" class="w-5 h-5"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="text-xs font-bold truncate max-w-[180px]">${name}</p>
+                                <p class="text-[9px] text-slate-400 mt-0.5">${size} • E2E Secured</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    contentHTML = `<p class="leading-relaxed break-words">${msg.message || ""}</p>`;
+                }
+
+                wrapper.innerHTML = `
+                    <div class="max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm relative group ${isMe ? 'bg-brand-500 text-white rounded-br-none' : 'bg-white dark:bg-obsidian-surface border border-slate-200 dark:border-white/5 text-slate-800 dark:text-slate-100 rounded-bl-none'}">
+                        ${contentHTML}
+                        <div class="flex items-center justify-end gap-1.5 text-[9px] mt-1 opacity-60 font-mono">
+                            <span>E2E Sec</span>
+                            <span>${stateTick}</span>
+                        </div>
+                        <button onclick="dispatchDeleteMessage(${msg.id})" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 w-5 h-5 rounded bg-red-500/20 hover:bg-red-500 text-white flex items-center justify-center transition-all cursor-pointer" title="Delete Message">
+                            <i data-lucide="trash" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+        }
+
+        async function dispatchUserMessage() {
+            const input = document.getElementById('mainMessageComposer');
+            const msgText = input.value.trim();
+            if (!msgText || !activeChatUUID) return;
+
+            const container = document.getElementById('messageScrollerFlow');
+            const wrapper = document.createElement('div');
+            wrapper.className = "flex w-full justify-end";
+            wrapper.innerHTML = `
+                <div class="max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm bg-brand-500 text-white rounded-br-none opacity-80 animate-pulse">
+                    <p class="leading-relaxed break-words">${msgText}</p>
+                    <div class="flex items-center justify-end gap-1.5 text-[9px] mt-1 opacity-60 font-mono">
+                        <span>Sending... ◷</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+
+            input.value = "";
+            input.rows = 1;
+
+            const bridge = getBridge();
+            if (bridge) {
+                try {
+                    await bridge.transmit_outbound_message(activeChatUUID, msgText);
+                    await renderConversationMessages();
+                    await syncChatDirectory();
+                } catch (e) {
+                    console.error("Outbound dispatch failure: ", e);
+                }
+            } else {
+                showAlertNotification("Dispatched simulated message.");
+            }
+        }
+
+        async function dispatchAttachmentUpload() {
+            const bridge = getBridge();
+            if (!bridge || !activeChatUUID) {
+                showAlertNotification("No active secure channel established.");
+                return;
+            }
+
+            const btn = document.getElementById('attachmentSelectBtn');
+            btn.disabled = true;
+            showAlertNotification("Select file attachment via dialog...");
+            
+            try {
+                const res = await bridge.select_and_send_attachment(activeChatUUID);
+                btn.disabled = false;
+                if (res && res.status === "success") {
+                    showAlertNotification("Attachment secured and sent.");
+                    await renderConversationMessages();
+                    await syncChatDirectory();
+                } else if (res && res.status === "error") {
+                    showAlertNotification("Error: " + res.message);
+                } else if (res && res.status === "cancelled") {
+                    showAlertNotification("File selection cancelled.");
+                }
+            } catch (err) {
+                btn.disabled = false;
+                console.error("File transmit fail:", err);
+            }
+        }
+
+        async function handleTypingDraftSave() {
+            const input = document.getElementById('mainMessageComposer');
+            const rows = Math.min(4, Math.max(1, Math.floor(input.scrollHeight / 20)));
+            input.rows = rows;
+
+            const bridge = getBridge();
+            if (!bridge || !activeChatUUID) return;
+            try {
+                await bridge.update_chat_status(activeChatUUID, 'draft_text', input.value);
+                const chat = currentChats.find(c => c.chat_uuid === activeChatUUID);
+                if (chat) chat.draft_text = input.value;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function dispatchDeleteMessage(msgID) {
+            const bridge = getBridge();
+            if (!bridge || !msgID) return;
+            try {
+                await bridge.delete_message(msgID);
+                await renderConversationMessages();
+                showAlertNotification("Message removed.");
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function triggerClearChat() {
+            toggleMoreChatActions();
+            openConfirmModal("Clear History", "This will permanently wipe all encrypted message logs inside this chat.", async () => {
+                const bridge = getBridge();
+                if (bridge && activeChatUUID) {
+                    const res = await bridge.clear_chat_history(activeChatUUID);
+                    if (res.status === "success") {
+                        showAlertNotification("Chat history cleaned.");
+                        await renderConversationMessages();
+                        await syncChatDirectory();
+                    }
+                }
+            });
+        }
+
+        function triggerDeleteChat() {
+            toggleMoreChatActions();
+            openConfirmModal("Delete Connection", "Are you absolutely sure you want to delete this chat session?", async () => {
+                const bridge = getBridge();
+                if (bridge && activeChatUUID) {
+                    const res = await bridge.delete_chat_session(activeChatUUID);
+                    if (res.status === "success") {
+                        showAlertNotification("Connection deleted completely.");
+                        activeChatUUID = null;
+                        document.getElementById('welcomePlaceholder').classList.remove('opacity-0', 'pointer-events-none');
+                        document.getElementById('activeMessagingHud').classList.add('hidden');
+                        await syncChatDirectory();
+                    }
+                }
+            });
+        }
+
+        function openConfirmModal(title, text, confirmCallback) {
+            const modal = document.getElementById('customConfirmModal');
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmBody').innerText = text;
+            activeConfirmCallback = confirmCallback;
+            modal.classList.remove('hidden');
+        }
+
+        function closeConfirmModal(accepted) {
+            document.getElementById('customConfirmModal').classList.add('hidden');
+            if (accepted && activeConfirmCallback) {
+                activeConfirmCallback();
+            }
+            activeConfirmCallback = null;
+        }
+
+        async function togglePinActiveChat() {
+            const bridge = getBridge();
+            if (!bridge || !activeChatUUID) return;
+            const chat = currentChats.find(c => c.chat_uuid === activeChatUUID);
+            if (!chat) return;
+
+            const nextState = chat.is_pinned ? 0 : 1;
+            try {
+                await bridge.update_chat_status(activeChatUUID, 'is_pinned', nextState);
+                showAlertNotification(nextState ? "Conversation pinned." : "Conversation unpinned.");
+                await bootstrapBackendData();
+                await selectConversation(activeChatUUID);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function toggleArchiveActiveChat() {
+            const bridge = getBridge();
+            if (!bridge || !activeChatUUID) return;
+            const chat = currentChats.find(c => c.chat_uuid === activeChatUUID);
+            if (!chat) return;
+
+            const nextState = chat.is_archived ? 0 : 1;
+            try {
+                await bridge.update_chat_status(activeChatUUID, 'is_archived', nextState);
+                showAlertNotification(nextState ? "Conversation archived." : "Conversation restored.");
+                await bootstrapBackendData();
+                if (nextState) {
+                    document.getElementById('welcomePlaceholder').classList.remove('opacity-0', 'pointer-events-none');
+                    document.getElementById('activeMessagingHud').classList.add('hidden');
+                } else {
+                    await selectConversation(activeChatUUID);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterConversations(type) {
+            currentFilterType = type;
+            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/5 transition-all";
+            });
+            const activeBtn = document.getElementById(`filter-${type}`);
+            if (activeBtn) {
+                activeBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/10 text-brand-500 dark:text-brand-400 transition-all";
+            }
+            renderChatDirectoryList();
+        }
+
+        function selectWallpaper(themeName) {
+            applyWallpaperToScroller(themeName);
+            localStorage.setItem('nexus_wallpaper', themeName);
+            showAlertNotification(`Wallpaper changed to ${themeName.toUpperCase()}`);
+        }
+
+        function applyWallpaperToScroller(themeName) {
+            const scroller = document.getElementById('messageScrollerFlow');
+            if (!scroller) return;
+            scroller.className = scroller.className.split(" ").filter(c => !c.startsWith("wp-")).join(" ");
+            scroller.classList.add(`wp-${themeName}`);
+            currentActiveWallpaper = themeName;
+        }
+
+        function toggleMoreChatActions() {
+            const menu = document.getElementById('moreActionsMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleEmojiTray() {
+            const tray = document.getElementById('emojiPickerTray');
+            tray.classList.toggle('hidden');
+        }
+
+        function switchDiscoveryTab(tab) {
+            document.getElementById('discoveryTab-network').classList.add('hidden');
+            document.getElementById('discoveryTab-import').classList.add('hidden');
+            
+            document.getElementById('tabBtn-network').className = "text-xs font-extrabold tracking-wider uppercase border-b-2 border-transparent pb-1 text-slate-400 hover:text-slate-200 transition-all";
+            document.getElementById('tabBtn-import').className = "text-xs font-extrabold tracking-wider uppercase border-b-2 border-transparent pb-1 text-slate-400 hover:text-slate-200 transition-all ml-4";
+            
+            if (tab === 'network') {
+                document.getElementById('discoveryTab-network').classList.remove('hidden');
+                document.getElementById('tabBtn-network').className = "text-xs font-extrabold tracking-wider uppercase border-b-2 border-brand-500 pb-1 text-brand-500 transition-all";
+            } else {
+                document.getElementById('discoveryTab-import').classList.remove('hidden');
+                document.getElementById('tabBtn-import').className = "text-xs font-extrabold tracking-wider uppercase border-b-2 border-brand-500 pb-1 text-slate-400 hover:text-slate-200 transition-all ml-4";
+            }
+        }
+
+        async function openDiscoveryViewModal() {
+            const modal = document.getElementById('discoveryViewModal');
+            modal.classList.remove('hidden');
+            switchDiscoveryTab('network');
+            runNearbySubnetScanner();
+            syncMyIdentity();
+            syncPendingRequests();
+        }
+
+        function closeDiscoveryViewModal() {
+            document.getElementById('discoveryViewModal').classList.add('hidden');
+            if (discoveredUsersScanInterval) {
+                clearInterval(discoveredUsersScanInterval);
+                discoveredUsersScanInterval = null;
+            }
+        }
+
+        function syncPendingRequests() {
+            const bridge = getBridge();
+            if (!bridge) return;
+            
+            bridge.get_pending_friend_requests().then(requests => {
+                const container = document.getElementById('pendingInvitesList');
+                if (!container) return;
+                container.innerHTML = "";
+
+                if (!requests || requests.length === 0) {
+                    container.innerHTML = `<p class="text-center text-[10px] text-slate-500 py-3">No pending connection requests</p>`;
+                    return;
+                }
+
+                requests.forEach(req => {
+                    const row = document.createElement('div');
+                    row.className = "p-2.5 bg-slate-100 dark:bg-obsidian-card border border-slate-200 dark:border-white/5 rounded-xl flex items-center justify-between text-xs transition-all";
+                    row.innerHTML = `
+                        <div class="text-left max-w-[200px] overflow-hidden">
+                            <p class="font-bold text-slate-800 dark:text-white leading-tight truncate">${req.username || req.display_name || req.sender_id}</p>
+                            <p class="text-[9px] text-brand-400 font-mono mt-0.5 truncate">${req.sender_id}</p>
+                        </div>
+                        <div class="flex gap-1.5 flex-shrink-0">
+                            <button onclick="handleIncomingRequestAction('${req.sender_id}', 'accept')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition-colors">Accept</button>
+                            <button onclick="handleIncomingRequestAction('${req.sender_id}', 'reject')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold transition-colors">Reject</button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            }).catch(err => {
+                console.error("Failed fetching pending requests: ", err);
+            });
+        }
+
+        function handleIncomingRequestAction(senderId, action) {
+            const bridge = getBridge();
+            if (!bridge) return;
+            
+            bridge.handle_request_action(senderId, action).then(res => {
+                if (res.status === 'success') {
+                    showAlertNotification(`Connection request accepted successfully.`);
+                    syncPendingRequests();
+                    syncChatDirectory();
+                } else {
+                    showAlertNotification("Action failed: " + res.message);
+                }
+            }).catch(err => {
+                console.error(err);
+            });
+        }
+
+        function syncMyIdentity() {
+            const bridge = getBridge();
+            if (bridge) {
+                bridge.fetch_user_identity_card().then(card => {
+                    myIdentityCard = card;
+                    const initials = (card.display_name || "S").charAt(0).toUpperCase();
+                    document.getElementById('userPassportHandle').innerText = card.public_id;
+                    
+                    bridge.generate_my_connection_token().then(token => {
+                        myCurrentToken = token;
+                        renderQRCanvas(token);
+                    }).catch(err => {
+                        renderQRCanvas(card.public_id);
+                    });
+                });
+            } else {
+                fallbackBootstrapSandbox();
+            }
+        }
+
+        async function runNearbySubnetScanner() {
+            const bridge = getBridge();
+            if (!bridge) return;
+
+            const scanBox = document.getElementById('nearbyUsersScanBox');
+
+            const refreshScan = async () => {
+                try {
+                    const users = await bridge.get_discovered_nearby_users();
+                    if (!users || users.length === 0) {
+                        scanBox.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full py-12 text-slate-400 gap-2">
+                                <i data-lucide="radio" class="w-6 h-6 animate-pulse text-indigo-500"></i>
+                                <span class="text-[11px]">No active peers discovered on subnet routing cache.</span>
+                            </div>
+                        `;
+                        lucide.createIcons();
+                        return;
+                    }
+
+                    scanBox.innerHTML = "";
+                    users.forEach(user => {
+                        const card = document.createElement('div');
+                        card.className = "p-3 bg-white dark:bg-obsidian-card hover:border-brand-500 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-between transition-all shadow-sm";
+                        card.innerHTML = `
+                            <div class="flex items-center gap-3 overflow-hidden mr-2">
+                                <div class="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center font-extrabold text-xs flex-shrink-0">
+                                    ${(user.display_name || "⬡").charAt(0).toUpperCase()}
+                                </div>
+                                <div class="text-left overflow-hidden">
+                                    <p class="text-xs font-bold text-slate-800 dark:text-white leading-tight truncate">${user.display_name}</p>
+                                    <p class="text-[9px] text-brand-400 font-mono font-bold mt-0.5 truncate">${user.public_id}</p>
+                                </div>
+                            </div>
+                            <button onclick="dispatchDirectDiscoveryRequest('${user.public_id}')" class="px-3 py-1.5 bg-brand-500/10 hover:bg-brand-500 text-brand-500 hover:text-white rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 flex-shrink-0">
+                                <i data-lucide="user-plus" class="w-3 h-3"></i> Connect
+                            </button>
+                        `;
+                        scanBox.appendChild(card);
+                    });
+                    lucide.createIcons();
+                } catch (e) {
+                    console.error("Discovery scan error: ", e);
+                }
+            };
+
+            await refreshScan();
+            discoveredUsersScanInterval = setInterval(refreshScan, 4000);
+        }
+
+        async function dispatchDirectDiscoveryRequest(publicId) {
+            document.getElementById('discoveryTargetID').value = publicId;
+            await dispatchDiscoveryRequest();
+        }
+
+        async function dispatchDiscoveryRequest() {
+            const targetID = document.getElementById('discoveryTargetID').value.trim();
+            if (!targetID) {
+                showAlertNotification("Please specify a target User ID.");
+                return;
+            }
+
+            const btn = document.getElementById('btnSendRequest');
+            btn.innerText = "Resolving...";
+            btn.disabled = true;
+
+            const bridge = getBridge();
+            if (bridge) {
+                try {
+                    const res = await bridge.dispatch_friend_request(targetID);
+                    btn.innerText = "Send Handshake";
+                    btn.disabled = false;
+                    
+                    if (res.status === 'success') {
+                        showAlertNotification("Handshake sent!");
+                        closeDiscoveryViewModal();
+                        await syncChatDirectory();
+                    } else {
+                        showAlertNotification(`Failed: ${res.message || res.status}`);
+                    }
+                } catch (ex) {
+                    btn.innerText = "Send Handshake";
+                    btn.disabled = false;
+                    showAlertNotification("Unable to reach DHT routing table coordinates.");
+                }
+            }
+        }
+
+        function handleQRImageDrop(e) {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processQRImageFile(files[0]);
+            }
+        }
+
+        function handleQRImageSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                processQRImageFile(files[0]);
+            }
+        }
+
+        function processQRImageFile(file) {
+            const reader = new FileReader();
+            document.getElementById('dropZoneText').innerText = "Analyzing file: " + file.name + "...";
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    
+                    if (code) {
+                        document.getElementById('importTokenInput').value = code.data;
+                        document.getElementById('dropZoneText').innerText = "✔ QR Decoded Successfully!";
+                        showAlertNotification("Decoded DHT token from image.");
+                    } else {
+                        document.getElementById('dropZoneText').innerText = "❌ No QR code detected.";
+                        showAlertNotification("Unable to detect valid P2P QR token.");
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function triggerP2PTokenImport() {
+            const token = document.getElementById('importTokenInput').value.trim();
+            if (!token) {
+                showAlertNotification("Paste a token or select a QR image first!");
+                return;
+            }
+
+            const bridge = getBridge();
+            if (bridge) {
+                bridge.import_p2p_connection_token(token).then(res => {
+                    if (res.status === "success") {
+                        showAlertNotification(res.message);
+                        closeDiscoveryViewModal();
+                        syncChatDirectory();
+                        if (res.peer && res.peer.public_id) {
+                            selectConversation(res.peer.public_id);
+                        }
+                    } else {
+                        showAlertNotification("Import Error: " + res.message);
+                    }
+                });
+            }
+        }
+
+        async function openControlCenter(page = 'profile') {
+            document.getElementById('masterControlCenterModal').classList.remove('hidden');
+            switchControlPage(page);
+            if (page === 'storage') {
+                await populateStorageMetrics();
+            }
+        }
+
+        function closeControlCenter() {
+            document.getElementById('masterControlCenterModal').classList.add('hidden');
+        }
+
+        function switchControlPage(targetPageId) {
+            document.querySelectorAll('.control-section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('[id^="navSetting-"]').forEach(btn => {
+                btn.className = "py-3 px-3 text-xs font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all flex items-center gap-1";
+            });
+
+            const targetSec = document.getElementById(`controlSec-${targetPageId}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            const targetBtn = document.getElementById(`navSetting-${targetPageId}`);
+            if (targetBtn) {
+                targetBtn.className = "py-3 px-3 text-xs font-bold border-b-2 border-brand-500 text-brand-500 transition-all flex items-center gap-1";
+            }
+        }
+
+        async function saveUserProfileSettings() {
+            const name = document.getElementById('formProfileName').value.trim();
+            const bio = document.getElementById('formProfileBio').value.trim();
+            
+            if (!name) {
+                showAlertNotification("Name cannot be empty.");
+                return;
+            }
+
+            const bridge = getBridge();
+            if (bridge) {
+                try {
+                    const response = await bridge.save_profile({ 
+                        name: name, 
+                        bio: bio
+                    });
+                    
+                    if (response && response.status === "error") {
+                        showAlertNotification("Error: " + response.message);
+                    } else {
+                        showAlertNotification("Profile credentials updated successfully.");
+                    }
+                } catch (err) {
+                    showAlertNotification("Error saving profile changes.");
+                }
+            }
+        }
+
+        async function populateStorageMetrics() {
+            const bridge = getBridge();
+            if (!bridge) return;
+            try {
+                const metrics = await bridge.fetch_storage_dashboard();
+                document.getElementById('storageSizeDB').innerText = (metrics.database / 1024).toFixed(2) + " KB";
+                document.getElementById('storageSizeTotal').innerText = (metrics.total / 1024).toFixed(2) + " KB";
+            } catch (ex) {
+                console.error(ex);
+            }
+        }
+
+        function toggleThemeMode() {
+            const htmlNode = document.documentElement;
+            const icon = document.getElementById('themeToggleIcon');
+            if (htmlNode.classList.contains('dark')) {
+                htmlNode.classList.remove('dark');
+                htmlNode.classList.add('light');
+                icon.setAttribute('data-lucide', 'moon');
+                showAlertNotification("Switched to Light Theme.");
+            } else {
+                htmlNode.classList.remove('light');
+                htmlNode.classList.add('dark');
+                icon.setAttribute('data-lucide', 'sun');
+                showAlertNotification("Switched to Dark Theme.");
+            }
+            renderChatDirectoryList();
+            lucide.createIcons();
+        }
+
+        function showAlertNotification(msg) {
+            const box = document.getElementById('alertBox');
+            const label = document.getElementById('alertMessage');
+            if (!box || !label) return;
+            label.innerText = msg;
+            box.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                box.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function appendMockEmoji(symbol) {
+            const input = document.getElementById('mainMessageComposer');
+            if (input) {
+                input.value += symbol;
+                input.focus();
+            }
+            document.getElementById('emojiPickerTray').classList.add('hidden');
+        }
+
+        function handleComposerKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); 
+                dispatchUserMessage();
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const moreActionsMenu = document.getElementById('moreActionsMenu');
+            const emojiPickerTray = document.getElementById('emojiPickerTray');
+            if (moreActionsMenu && !e.target.closest('[title="More Actions"]')) {
+                moreActionsMenu.classList.add('hidden');
+            }
+            if (emojiPickerTray && !e.target.closest('[title="Insert Emoji"]') && !e.target.closest('#emojiPickerTray')) {
+                emojiPickerTray.classList.add('hidden');
+            }
+        });
+
+        function switchTab(tabKey) {
+            activeTabName = tabKey;
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.className = "tab-button w-12 h-12 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-all duration-300 group";
+            });
+            const activeBtn = document.getElementById(`rail-${tabKey}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-button w-12 h-12 rounded-xl flex items-center justify-center text-brand-500 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-sm transition-all duration-300 group";
+            }
+
+            const title = document.getElementById('directoryHeadline');
+            if (tabKey === 'chats') {
+                title.innerText = "Inbox";
+                filterConversations('all');
+            } else if (tabKey === 'friends') {
+                title.innerText = "DHT Peers";
+                renderActivePeersDirectory();
+            }
+        }
+
+        function renderActivePeersDirectory() {
+            const container = document.getElementById('chatsScrollBox');
+            if (!container) return;
+            container.innerHTML = "";
+            currentChats.forEach(chat => {
+                const row = document.createElement('div');
+                row.className = "mx-3 p-3 rounded-xl flex items-center justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer";
+                row.setAttribute('onclick', `selectConversation('${chat.chat_uuid}')`);
+                row.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 font-bold flex items-center justify-center">
+                            ${(chat.chat_name || "⬡").charAt(0).toUpperCase()}
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-xs font-bold text-slate-800 dark:text-white truncate">${chat.chat_name || "Decentralized Peer"}</p>
+                            <p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">${chat.chat_uuid}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function toggleGlobalSpotlight() {
+            const modal = document.getElementById('globalSpotlightModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                const input = document.getElementById('spotlightSearchInput');
+                if (input) {
+                    input.value = "";
+                    input.focus();
+                }
+                executeSpotlightSearch("");
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function executeSpotlightSearch(term) {
+            const container = document.getElementById('spotlightScrollBox');
+            if (!container) return;
+            container.innerHTML = "";
+            const normalized = term.toLowerCase().trim();
+            const lookupItems = [
+                { title: "Storage Allocation & Configuration Panel", action: "openControlCenter('storage'); toggleGlobalSpotlight();", icon: "hard-drive" },
+                { title: "User Identity Connection Card", action: "openDiscoveryViewModal(); toggleGlobalSpotlight();", icon: "user-plus" }
+            ];
+            lookupItems.forEach(item => {
+                if (normalized && !item.title.toLowerCase().includes(normalized)) return;
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-brand-500 hover:text-white cursor-pointer transition-all group";
+                row.setAttribute('onclick', item.action);
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="${item.icon}" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
+                        <span class="text-xs font-semibold">${item.title}</span>
+                    </div>
+                    <i data-lucide="corner-down-left" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                `;
+                container.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('globalSpotlightModal').classList.add('hidden');
+                document.getElementById('discoveryViewModal').classList.add('hidden');
+                document.getElementById('emojiPickerTray').classList.add('hidden');
+                document.getElementById('moreActionsMenu').classList.add('hidden');
+                closeControlCenter();
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                toggleGlobalSpotlight();
+            }
+        });
+
+        // --- BACKEND CALLBACK HOOKS ---
+
+        const onIncomingMessage = function(senderID) {
+            if (activeChatUUID === senderID) {
+                renderConversationMessages();
+            }
+            syncChatDirectory();
+        };
+
+        const onMessageAckReceived = function(messageUUID) {
+            if (activeChatUUID) {
+                renderConversationMessages();
+            }
+        };
+
+        const onFriendRequestReceived = function() {
+            showAlertNotification("Handshake accepted!");
+            syncPendingRequests();
+            syncChatDirectory();
+        };
+
+        const onProfileUpdated = function() {
+            bootstrapBackendData();
+        };
+
+        const showLocalNotification = function(title, body) {
+            showAlertNotification(`${title}: ${body}`);
+        };
+
+        window.onIncomingMessage = onIncomingMessage;
+        window.onMessageAckReceived = onMessageAckReceived;
+        window.onFriendRequestReceived = onFriendRequestReceived;
+        window.onProfileUpdated = onProfileUpdated;
+        window.showLocalNotification = showLocalNotification;
+        window.syncChatDirectory = syncChatDirectory;
+
+    </script>
+</body>
+</html>
