@@ -21,7 +21,7 @@
 
 ### ⚡ Ready to Start Secure Messaging?
 
-<a href="../../releases/latest">
+<a href="https://github.com/JaiServanaBhava/SamparkKranti/releases/download/v1.0.0/SamparkKranti.exe">
   <img src="https://img.shields.io/badge/⬇%20Download-SamparkKranti%20for%20Windows-2ea44f?style=for-the-badge" alt="Download SamparkKranti">
 </a>
 
